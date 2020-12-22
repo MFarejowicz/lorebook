@@ -1,8 +1,20 @@
 import { useContext } from "react";
-import { FirebaseContext } from "../../App";
+import { SignInButton } from "src/components/sign-in-button";
+import { FirebaseContext } from "src/firebase";
+import "./styles.css";
 
-export const Home = () => {
+interface PublicProps {
+  signIn: () => void;
+}
+
+type Props = PublicProps;
+
+export const Home = (props: Props) => {
   const { user } = useContext(FirebaseContext);
 
-  return <div>{user?.displayName}</div>;
+  return (
+    <div className="Home">
+      {user ? <span>Hello, {user.displayName}</span> : <SignInButton signIn={props.signIn} />}
+    </div>
+  );
 };

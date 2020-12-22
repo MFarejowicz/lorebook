@@ -15,11 +15,7 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
-    "baseUrl": ".",
-    "paths": {
-      "lorebook": ["src"],
-      "lorebook/*": ["src/*"]
-    }
+    "baseUrl": "."
   },
   "include": ["src"]
 }

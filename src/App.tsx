@@ -1,69 +1,41 @@
-import { createContext } from "react";
+import { useEffect } from "react";
+import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 import withFirebaseAuth, { WrappedComponentProps as AuthProps } from "react-with-firebase-auth";
-import firebase from "firebase/app";
-import firebaseConfig from "./firebaseConfig";
+import { firebaseAppAuth, FirebaseContextManager, providers } from "./firebase";
 import { Home } from "./pages/home";
-import "firebase/auth";
-import "firebase/database";
+import { NotFound } from "./pages/not-found";
+import { NavBar } from "./components/navbar";
 import "./App.css";
-
-let firebaseApp: firebase.app.App;
-if (!firebase.apps.length) {
-  firebaseApp = firebase.initializeApp(firebaseConfig);
-} else {
-  firebaseApp = firebase.app();
-}
-const firebaseAppAuth = firebaseApp.auth();
-const providers = {
-  googleProvider: new firebase.auth.GoogleAuthProvider(),
-};
-
-interface FirebaseContextValue {
-  user?: firebase.User | null;
-  db?: firebase.database.Database | null;
-}
-const DEFAULT_CONTEXT_VALUE: FirebaseContextValue = {
-  user: null,
-  db: null,
-};
-export const FirebaseContext = createContext(DEFAULT_CONTEXT_VALUE);
-const db = firebase.database();
 
 type Props = AuthProps;
 
 const App = (props: Props) => {
-  const { user, signOut, signInWithGoogle } = props;
+  const { user, signInWithGoogle, signOut, loading } = props;
+  console.log(loading);
 
-  const signIn = () => {
-    signInWithGoogle().then((res) => {
-      const { user } = res;
-
-      if (user) {
-        db.ref(`users/${user.uid}`).set({
-          name: user.displayName,
-          email: user.email,
-          id: user.uid,
-        });
-      }
-    });
-  };
+  useEffect(() => {
+    if (user) {
+      console.log(user);
+      // log to firebase here?
+    }
+  }, [user]);
 
   return (
-    <FirebaseContext.Provider value={{ user: user, db: db }}>
-      <div>
-        {user && (
-          <>
-            <span>Hello, {user.displayName}</span>
-            <Home />
-          </>
-        )}
-        {user ? (
-          <button onClick={signOut}>Sign out</button>
-        ) : (
-          <button onClick={signIn}>Sign in with Google</button>
-        )}
+    <FirebaseContextManager user={user}>
+      <div className="App">
+        <Router>
+          <NavBar signIn={signInWithGoogle} signOut={signOut} />
+          <Switch>
+            <Route exact path="/">
+              <Home signIn={signInWithGoogle} />
+            </Route>
+            <Route path="*">
+              <NotFound />
+            </Route>
+          </Switch>
+        </Router>
       </div>
-    </FirebaseContext.Provider>
+    </FirebaseContextManager>
   );
 };
 
