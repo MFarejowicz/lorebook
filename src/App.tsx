@@ -1,34 +1,69 @@
+import { createContext } from "react";
 import withFirebaseAuth, { WrappedComponentProps as AuthProps } from "react-with-firebase-auth";
-import firebase from "firebase";
+import firebase from "firebase/app";
 import firebaseConfig from "./firebaseConfig";
+import { Home } from "./pages/home";
 import "firebase/auth";
+import "firebase/database";
 import "./App.css";
 
-const firebaseApp = firebase.initializeApp(firebaseConfig);
+let firebaseApp: firebase.app.App;
+if (!firebase.apps.length) {
+  firebaseApp = firebase.initializeApp(firebaseConfig);
+} else {
+  firebaseApp = firebase.app();
+}
 const firebaseAppAuth = firebaseApp.auth();
 const providers = {
   googleProvider: new firebase.auth.GoogleAuthProvider(),
 };
+
+interface FirebaseContextValue {
+  user?: firebase.User | null;
+  db?: firebase.database.Database | null;
+}
+const DEFAULT_CONTEXT_VALUE: FirebaseContextValue = {
+  user: null,
+  db: null,
+};
+export const FirebaseContext = createContext(DEFAULT_CONTEXT_VALUE);
+const db = firebase.database();
 
 type Props = AuthProps;
 
 const App = (props: Props) => {
   const { user, signOut, signInWithGoogle } = props;
 
-  if (user)
-    console.debug(
-      `🥳 ${user.displayName} has signed in from ${user.providerData[0]?.providerId} 🥳`
-    );
+  const signIn = () => {
+    signInWithGoogle().then((res) => {
+      const { user } = res;
+
+      if (user) {
+        db.ref(`users/${user.uid}`).set({
+          name: user.displayName,
+          email: user.email,
+          id: user.uid,
+        });
+      }
+    });
+  };
 
   return (
-    <div>
-      {user && <span>Hello, {user.displayName}</span>}
-      {user ? (
-        <button onClick={signOut}>Sign out</button>
-      ) : (
-        <button onClick={signInWithGoogle}>Sign in with Google</button>
-      )}
-    </div>
+    <FirebaseContext.Provider value={{ user: user, db: db }}>
+      <div>
+        {user && (
+          <>
+            <span>Hello, {user.displayName}</span>
+            <Home />
+          </>
+        )}
+        {user ? (
+          <button onClick={signOut}>Sign out</button>
+        ) : (
+          <button onClick={signIn}>Sign in with Google</button>
+        )}
+      </div>
+    </FirebaseContext.Provider>
   );
 };
 
