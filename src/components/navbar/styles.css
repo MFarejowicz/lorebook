@@ -2,4 +2,17 @@
   display: flex;
   justify-content: flex-end;
   align-items: center;
+  padding: 10px 20px;
+  height: 30px;
+  border-bottom: 1px solid black;
+}
+
+.NavBar-welcome {
+  margin-right: 5px;
+}
+
+.NavBar-placeholder {
+  width: 180px;
+  height: 20px;
+  background-color: lightgray;
 }

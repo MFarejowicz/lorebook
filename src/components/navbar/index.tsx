@@ -1,6 +1,6 @@
 import { useContext } from "react";
+import { useHistory, useLocation } from "react-router-dom";
 import { FirebaseContext } from "src/firebase";
-import { SignInButton } from "src/components/sign-in-button";
 import "./styles.css";
 
 interface PublicProps {
@@ -12,14 +12,27 @@ type Props = PublicProps;
 
 export const NavBar = (props: Props) => {
   const { user } = useContext(FirebaseContext);
+  const location = useLocation();
+  const history = useHistory();
+
+  if (location.pathname === "/" && !user) {
+    return null;
+  }
+
+  const signOut = () => {
+    props.signOut();
+    history.push("/");
+  };
 
   return (
     <div className="NavBar">
-      {user && <div>Hi, {user.displayName}!</div>}
       {user ? (
-        <button onClick={props.signOut}>Sign Out</button>
+        <>
+          <div className="NavBar-welcome">Hi, {user.displayName}!</div>
+          <button onClick={signOut}>Sign Out</button>
+        </>
       ) : (
-        <SignInButton signIn={props.signIn} />
+        <div className="NavBar-placeholder" />
       )}
     </div>
   );
