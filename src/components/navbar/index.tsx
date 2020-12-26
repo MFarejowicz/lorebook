@@ -1,5 +1,5 @@
 import { useContext } from "react";
-import { useHistory, useLocation } from "react-router-dom";
+import { Link, useHistory, useLocation } from "react-router-dom";
 import { FirebaseContext } from "src/firebase";
 import "./styles.css";
 
@@ -26,14 +26,19 @@ export const NavBar = (props: Props) => {
 
   return (
     <div className="NavBar">
-      {user ? (
-        <>
-          <div className="NavBar-welcome">Hi, {user.displayName}!</div>
-          <button onClick={signOut}>Sign Out</button>
-        </>
-      ) : (
-        <div className="NavBar-placeholder" />
-      )}
+      <>
+        <div className="NavBar-title">
+          <Link to="/">Lorebook</Link>
+        </div>
+        {user ? (
+          <div className="NavBar-info">
+            <div className="NavBar-welcome">Hi, {user.displayName}!</div>
+            <button onClick={signOut}>Sign Out</button>
+          </div>
+        ) : (
+          <div className="NavBar-placeholder" />
+        )}
+      </>
     </div>
   );
 };

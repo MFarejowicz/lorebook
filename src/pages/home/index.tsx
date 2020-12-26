@@ -31,6 +31,7 @@ export const Home = (props: Props) => {
           </div>
           <div className="Home-column">
             <h1 className="Home-title">Friends Lore</h1>
+            <div>Coming soon!</div>
           </div>
         </div>
       ) : (

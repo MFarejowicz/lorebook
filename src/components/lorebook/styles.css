@@ -1,0 +1,42 @@
+.LorebookDisplay-tabs {
+  display: flex;
+}
+
+.LorebookDisplay-tab {
+  padding: 10px;
+  border: 1px solid black;
+  border-bottom: 0;
+  cursor: pointer;
+}
+
+.LorebookDisplay-tab:hover {
+  background-color: gray;
+}
+
+.LorebookDisplay-tab__selected {
+  background-color: lightgray;
+}
+
+.LorebookDisplay-body {
+  border: 1px solid black;
+  display: grid;
+  grid-gap: 1px;
+  background-color: black;
+}
+
+.LorebookDisplay-cell {
+  padding: 10px;
+  background-color: white;
+}
+
+.LorebookDisplay-new {
+  display: flex;
+  justify-content: center;
+  border: 1px solid black;
+  border-top: 0;
+  cursor: pointer;
+}
+
+.LorebookDisplay-new:hover {
+  background-color: gray;
+}

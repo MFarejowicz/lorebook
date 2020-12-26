@@ -1,10 +1,15 @@
 .NavBar {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
   align-items: center;
   padding: 10px 20px;
   height: 30px;
   border-bottom: 1px solid black;
+}
+
+.NavBar-info {
+  display: flex;
+  align-items: center;
 }
 
 .NavBar-welcome {
