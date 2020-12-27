@@ -1,7 +1,8 @@
-import { useContext } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { SignInButton } from "src/components/sign-in-button";
-import { FirebaseContext } from "src/firebase";
+import { FirebaseContext, Lorebook } from "src/firebase";
+import { filterUserLore } from "src/utils";
 import "./styles.css";
 
 interface PublicProps {
@@ -11,11 +12,47 @@ interface PublicProps {
 type Props = PublicProps;
 
 export const Home = (props: Props) => {
-  const { user } = useContext(FirebaseContext);
+  const { user, db } = useContext(FirebaseContext);
 
-  if (user === undefined) {
+  /**
+   * data for the lore of the user who's page you're on
+   * undefined === not set yet
+   * Lorebook[] === set and lore is good (but might be empty!)
+   */
+  const [myLoreData, setMyLoreData] = useState<Lorebook[]>();
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const loreSnapshot = await db.ref(`/lore`).once("value");
+      if (user) setMyLoreData(filterUserLore(loreSnapshot.val(), user.uid));
+    };
+
+    fetchData();
+  }, [user, db]);
+
+  if (user === undefined || myLoreData === undefined) {
     return <div>Loading...</div>;
   }
+
+  const renderMyLore = () => {
+    if (myLoreData.length === 0) {
+      return (
+        <div>
+          You don't have any lore yet! Start by adding lore on{" "}
+          <Link to={`/lore/${user?.uid}`}>your lore page.</Link>
+        </div>
+      );
+    }
+
+    return (
+      <>
+        {myLoreData.map((lorebook) => (
+          <div key={`lorebook-${lorebook.id}`}>{lorebook.title}</div>
+        ))}
+        <Link to={`/lore/${user?.uid}`}>See all your lore</Link>
+      </>
+    );
+  };
 
   return (
     <div className="Home">
@@ -23,11 +60,7 @@ export const Home = (props: Props) => {
         <div className="Home-feed">
           <div className="Home-column">
             <h1 className="Home-title">Your Lore</h1>
-            <div>Lore book 1</div>
-            <div>Lore book 2</div>
-            <div>
-              <Link to={`/lore/${user.uid}`}>See all your lore</Link>
-            </div>
+            {renderMyLore()}
           </div>
           <div className="Home-column">
             <h1 className="Home-title">Friends Lore</h1>

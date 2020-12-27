@@ -1,0 +1,6 @@
+.Editable {
+  padding: 8px;
+  background-color: white;
+  display: flex;
+  align-items: center;
+}

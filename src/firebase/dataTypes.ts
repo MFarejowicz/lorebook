@@ -12,7 +12,7 @@ export interface Entry {
 export interface Field {
   id: string;
   name: string;
-  type: "string" | "number" | "date";
+  type: "text" | "number" | "date";
 }
 
 export interface Lorebook {

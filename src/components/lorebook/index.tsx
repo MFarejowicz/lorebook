@@ -1,6 +1,7 @@
 import classnames from "classnames";
 import { useContext, useState } from "react";
 import { Entry, Field, FirebaseContext, Lorebook } from "src/firebase";
+import { Editable } from "../editable";
 import "./styles.css";
 
 interface PublicProps {
@@ -47,19 +48,33 @@ export const LorebookDisplay = (props: Props) => {
   };
 
   const renderHeader = (fields: Field[]) => {
-    return fields.map((field) => (
-      <div className="LorebookDisplay-cell" key={`header-${field.id}`}>
-        {field.name}
+    return (
+      <div className="LorebookDisplay-row">
+        {fields.map((field) => (
+          <div className="LorebookDisplay-cell" key={`header-${field.id}`}>
+            {field.name}
+          </div>
+        ))}
       </div>
-    ));
+    );
   };
 
   const renderRow = (entry: Entry, fields: Field[]) => {
-    return fields.map((field) => (
-      <div className="LorebookDisplay-cell" key={`cell-${entry.id}-${field.id}`}>
-        {entry[field.id] || "---"}
+    const selectedLorebook = props.lore[selectedLorebookIndex];
+
+    return (
+      <div className="LorebookDisplay-row" key={`row-${entry.id}`}>
+        {fields.map((field) => (
+          <Editable
+            key={`cell-${entry.id}-${field.id}`}
+            initialValue={entry[field.id] || "---"}
+            lorebook={selectedLorebook}
+            field={field}
+            entry={entry}
+          />
+        ))}
       </div>
-    ));
+    );
   };
 
   const renderBody = () => {
