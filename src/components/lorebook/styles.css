@@ -32,6 +32,10 @@
   background-color: lightgray;
 }
 
+.LorebookDisplay-header {
+  font-weight: bold;
+}
+
 .LorebookDisplay-cell {
   padding: 8px;
   cursor: pointer;
@@ -54,14 +58,4 @@
 
 .LorebookDisplay-new:hover {
   background-color: gray;
-}
-
-.Modal-lorebook {
-  position: absolute;
-  inset: 100px 200px;
-  border: 1px solid black;
-  background: white;
-  overflow: auto;
-  outline: none;
-  padding: 20px;
 }

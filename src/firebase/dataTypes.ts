@@ -9,11 +9,18 @@ export interface Entry {
   [key: string]: string | null;
 }
 
+export type FieldType = "text" | "number" | "date";
+
 export interface Field {
   id: string;
   name: string;
-  type: "text" | "number" | "date";
+  type: FieldType;
 }
+
+/**
+ * Like a Field, but has no id
+ */
+export type PreField = Pick<Field, "name" | "type">;
 
 export interface Lorebook {
   id: string;

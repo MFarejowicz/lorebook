@@ -1,8 +1,9 @@
 import classnames from "classnames";
 import { useContext, useEffect, useState } from "react";
-import ReactModal from "react-modal";
-import { Entry, Field, FirebaseContext, Lorebook } from "src/firebase";
+import { Entry, Field, FirebaseContext, Lorebook, PreField } from "src/firebase";
+import { enterPress } from "src/utils";
 import { Editable } from "../editable";
+import { NewLorebookModal } from "../new-lorebook-modal";
 import "./styles.css";
 
 interface PublicProps {
@@ -39,16 +40,29 @@ export const LorebookDisplay = (props: Props) => {
     };
   }, [db, selectedLoreID]);
 
-  const addNewLorebook = () => {
-    const newPostKey = db.ref(`/lore`).push().key;
-    if (newPostKey && user) {
+  const addNewLorebook = async (title: string, fields: PreField[]) => {
+    const newLorebookKey = db.ref(`/lore`).push().key;
+    if (newLorebookKey && user) {
       const update: Lorebook = {
-        id: newPostKey,
+        id: newLorebookKey,
         author: user.uid,
-        title: "test",
+        title,
       };
 
-      db.ref(`/lore/${newPostKey}`).update(update);
+      await db.ref(`/lore/${newLorebookKey}`).update(update);
+
+      for (const field of fields) {
+        const newFieldKey = db.ref(`/lore/${newLorebookKey}/fields`).push().key;
+        if (newFieldKey) {
+          const fieldUpdate: Field = {
+            id: newFieldKey,
+            name: field.name,
+            type: field.type,
+          };
+
+          await db.ref(`/lore/${newLorebookKey}/fields/${newFieldKey}`).update(fieldUpdate);
+        }
+      }
 
       closeModal();
       props.onAddNewLorebook();
@@ -73,13 +87,19 @@ export const LorebookDisplay = (props: Props) => {
               "LorebookDisplay-tab__selected": el.id === selectedLoreID,
             })}
             onClick={() => setSelectedLoreID(el.id)}
+            onKeyPress={enterPress(() => setSelectedLoreID(el.id))}
             tabIndex={0}
             key={`tab-${el.id}`}
           >
             <h2>{el.title}</h2>
           </div>
         ))}
-        <div className="LorebookDisplay-tab" onClick={openModal} tabIndex={0}>
+        <div
+          className="LorebookDisplay-tab"
+          onClick={openModal}
+          onKeyPress={enterPress(openModal)}
+          tabIndex={0}
+        >
           <h2>+</h2>
         </div>
       </div>
@@ -90,7 +110,7 @@ export const LorebookDisplay = (props: Props) => {
     return (
       <div className="LorebookDisplay-row">
         {fields.map((field) => (
-          <div className="LorebookDisplay-cell" key={`header-${field.id}`}>
+          <div className="LorebookDisplay-header LorebookDisplay-cell" key={`header-${field.id}`}>
             {field.name}
           </div>
         ))}
@@ -131,11 +151,11 @@ export const LorebookDisplay = (props: Props) => {
 
   return (
     <div>
-      <ReactModal isOpen={modalOpen} onRequestClose={closeModal} className="Modal-lorebook">
-        <h2>Create New Lorebook!</h2>
-        <button onClick={addNewLorebook}>Add</button>
-        <button onClick={closeModal}>Close</button>
-      </ReactModal>
+      <NewLorebookModal
+        isOpen={modalOpen}
+        closeModal={closeModal}
+        addNewLorebook={addNewLorebook}
+      />
       {renderTabs()}
       {renderBody()}
       <div className="LorebookDisplay-new" onClick={addNewEntry}>

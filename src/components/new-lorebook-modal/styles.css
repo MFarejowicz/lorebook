@@ -1,0 +1,9 @@
+.NewLorebookModal {
+  position: absolute;
+  inset: 100px 200px;
+  border: 1px solid black;
+  background: white;
+  overflow: auto;
+  outline: none;
+  padding: 20px;
+}

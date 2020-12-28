@@ -10,3 +10,9 @@ export const filterUserLore = (loreMap: LoreMap, userID: string) => {
 
   return userLorebooks;
 };
+
+export const enterPress = (callback: Function) => {
+  return (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === "Enter") callback();
+  };
+};
