@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import ReactModal from "react-modal";
 import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
 import withFirebaseAuth, { WrappedComponentProps as AuthProps } from "react-with-firebase-auth";
 import { NavBar } from "./components/navbar";
@@ -7,6 +8,8 @@ import { Home } from "./pages/home";
 import { Lore } from "./pages/lore";
 import { NotFound } from "./pages/not-found";
 import "./App.css";
+
+ReactModal.setAppElement("#root");
 
 type Props = AuthProps;
 

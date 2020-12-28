@@ -47,7 +47,7 @@ export const Lore = () => {
     return <div className="Lore">User not found!</div>;
   }
 
-  const onAddNewLore = async () => {
+  const onAddNewLorebook = async () => {
     const loreSnapshot = await db.ref(`/lore`).once("value");
     setLoreData(filterUserLore(loreSnapshot.val(), userID));
   };
@@ -84,7 +84,11 @@ export const Lore = () => {
         {loreData.length === 0 ? (
           renderNoLore()
         ) : (
-          <LorebookDisplay lore={loreData} editable={isOwner()} onAddNewLore={onAddNewLore} />
+          <LorebookDisplay
+            lore={loreData}
+            editable={isOwner()}
+            onAddNewLorebook={onAddNewLorebook}
+          />
         )}
       </>
     );

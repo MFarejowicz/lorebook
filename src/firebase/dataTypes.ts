@@ -19,6 +19,6 @@ export interface Lorebook {
   id: string;
   author: string;
   title: string;
-  entries: { [id: string]: Entry };
-  fields: { [id: string]: Field };
+  entries?: { [id: string]: Entry };
+  fields?: { [id: string]: Field };
 }
