@@ -1,5 +1,5 @@
 import classnames from "classnames";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Entry, Field, FirebaseContext, Lorebook } from "src/firebase";
 import { Editable } from "../editable";
 import "./styles.css";
@@ -7,40 +7,54 @@ import "./styles.css";
 interface PublicProps {
   lore: Lorebook[];
   editable: boolean;
+  onAddNewLore: () => void;
 }
 
 type Props = PublicProps;
 
 export const LorebookDisplay = (props: Props) => {
   const { db } = useContext(FirebaseContext);
-  const [selectedLorebookIndex, setSelectedLorebookIndex] = useState(0);
+
+  // set initial state from props
+  const [selectedLoreID, setSelectedLoreID] = useState(props.lore[0].id);
+  const [lorebookData, setLorebookData] = useState<Lorebook>(props.lore[0]);
+
+  useEffect(() => {
+    const listener = db.ref(`/lore/${selectedLoreID}`).on("value", (lorebookSnapshot) => {
+      setLorebookData(lorebookSnapshot.val());
+    });
+
+    return () => {
+      db.ref(`/lore/${selectedLoreID}`).off("value", listener);
+    };
+  }, [db, selectedLoreID]);
+
+  const addNewLorebook = () => {
+    props.onAddNewLore();
+  };
 
   const addNewEntry = () => {
-    const selectedLorebook = props.lore[selectedLorebookIndex];
-
-    const newPostKey = db.ref(`/lore/${selectedLorebook.id}/entries`).push().key;
+    const newPostKey = db.ref(`/lore/${selectedLoreID}/entries`).push().key;
     const update: Entry = { id: newPostKey || "error" };
 
-    db.ref(`/lore/${selectedLorebook.id}/entries/${newPostKey}`).update(update);
+    db.ref(`/lore/${selectedLoreID}/entries/${newPostKey}`).update(update);
   };
 
   const renderTabs = () => {
-    const selectedLorebook = props.lore[selectedLorebookIndex];
-
     return (
       <div className="LorebookDisplay-tabs">
-        {props.lore.map((el, index) => (
+        {props.lore.map((el) => (
           <div
             className={classnames("LorebookDisplay-tab", {
-              "LorebookDisplay-tab__selected": el.id === selectedLorebook.id,
+              "LorebookDisplay-tab__selected": el.id === selectedLoreID,
             })}
-            onClick={() => setSelectedLorebookIndex(index)}
+            onClick={() => setSelectedLoreID(el.id)}
             key={`tab-${el.id}`}
           >
             <h2>{el.title}</h2>
           </div>
         ))}
-        <div className="LorebookDisplay-tab">
+        <div className="LorebookDisplay-tab" onClick={addNewLorebook}>
           <h2>+</h2>
         </div>
       </div>
@@ -60,15 +74,13 @@ export const LorebookDisplay = (props: Props) => {
   };
 
   const renderRow = (entry: Entry, fields: Field[]) => {
-    const selectedLorebook = props.lore[selectedLorebookIndex];
-
     return (
       <div className="LorebookDisplay-row" key={`row-${entry.id}`}>
         {fields.map((field) => (
           <Editable
             key={`cell-${entry.id}-${field.id}`}
             initialValue={entry[field.id] || "---"}
-            lorebook={selectedLorebook}
+            lorebook={lorebookData}
             field={field}
             entry={entry}
           />
@@ -78,9 +90,8 @@ export const LorebookDisplay = (props: Props) => {
   };
 
   const renderBody = () => {
-    const selectedLorebook = props.lore[selectedLorebookIndex];
-    const fields = Object.values(selectedLorebook.fields);
-    const entries = Object.values(selectedLorebook.entries);
+    const fields = Object.values(lorebookData.fields);
+    const entries = Object.values(lorebookData.entries);
 
     return (
       <div

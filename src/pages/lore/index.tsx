@@ -31,16 +31,12 @@ export const Lore = () => {
     const fetchData = async () => {
       const userSnapshot = await db.ref(`/users/${userID}`).once("value");
       setUserData(userSnapshot.val());
-    };
-    fetchData();
 
-    const listener = db.ref(`/lore`).on("value", (loreSnapshot) => {
+      const loreSnapshot = await db.ref(`/lore`).once("value");
       setLoreData(filterUserLore(loreSnapshot.val(), userID));
-    });
-
-    return () => {
-      db.ref(`/lore`).off("value", listener);
     };
+
+    fetchData();
   }, [db, userID]);
 
   if (userData === undefined) {
@@ -50,6 +46,11 @@ export const Lore = () => {
   if (userData === null) {
     return <div className="Lore">User not found!</div>;
   }
+
+  const onAddNewLore = async () => {
+    const loreSnapshot = await db.ref(`/lore`).once("value");
+    setLoreData(filterUserLore(loreSnapshot.val(), userID));
+  };
 
   const isOwner = () => {
     return user?.uid === userData.id;
@@ -83,7 +84,7 @@ export const Lore = () => {
         {loreData.length === 0 ? (
           renderNoLore()
         ) : (
-          <LorebookDisplay lore={loreData} editable={isOwner()} />
+          <LorebookDisplay lore={loreData} editable={isOwner()} onAddNewLore={onAddNewLore} />
         )}
       </>
     );
