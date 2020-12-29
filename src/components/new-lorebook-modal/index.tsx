@@ -59,11 +59,7 @@ export const NewLorebookModal = (props: Props) => {
   };
 
   return (
-    <ReactModal
-      isOpen={props.isOpen}
-      onRequestClose={props.closeModal}
-      className="NewLorebookModal"
-    >
+    <ReactModal isOpen={props.isOpen} onRequestClose={props.closeModal} className="Modal">
       <h2>Create New Lorebook!</h2>
       <div>
         <label htmlFor="title">Title your lore: </label>

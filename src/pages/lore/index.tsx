@@ -1,7 +1,8 @@
 import { useContext, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { LorebookDisplay } from "src/components/lorebook";
-import { FirebaseContext, Lorebook, User } from "src/firebase";
+import { NewLorebookModal } from "src/components/new-lorebook-modal";
+import { Field, FirebaseContext, Lorebook, PreField, User } from "src/firebase";
 import { filterUserLore } from "src/utils";
 import "./styles.css";
 
@@ -12,6 +13,14 @@ interface LoreParams {
 export const Lore = () => {
   const { user, db } = useContext(FirebaseContext);
   const { userID } = useParams<LoreParams>();
+  const [modalOpen, setModalOpen] = useState(false);
+  const openModal = () => {
+    setModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setModalOpen(false);
+  };
 
   /**
    * data for the user who's page you're on
@@ -52,6 +61,35 @@ export const Lore = () => {
     setLoreData(filterUserLore(loreSnapshot.val(), userID));
   };
 
+  const addNewLorebook = async (title: string, fields: PreField[]) => {
+    const newLorebookKey = db.ref(`/lore`).push().key;
+    if (newLorebookKey && user) {
+      const update: Lorebook = {
+        id: newLorebookKey,
+        author: user.uid,
+        title,
+      };
+
+      await db.ref(`/lore/${newLorebookKey}`).update(update);
+
+      for (const field of fields) {
+        const newFieldKey = db.ref(`/lore/${newLorebookKey}/fields`).push().key;
+        if (newFieldKey) {
+          const fieldUpdate: Field = {
+            id: newFieldKey,
+            name: field.name,
+            type: field.type,
+          };
+
+          await db.ref(`/lore/${newLorebookKey}/fields/${newFieldKey}`).update(fieldUpdate);
+        }
+      }
+
+      closeModal();
+      onAddNewLorebook();
+    }
+  };
+
   const isOwner = () => {
     return user?.uid === userData.id;
   };
@@ -62,7 +100,10 @@ export const Lore = () => {
 
   const renderNoLore = () => {
     return isOwner() ? (
-      <div>You don't have any lore yet! Start by adding a lorebook.</div>
+      <div>
+        You don't have any lore yet! Start by{" "}
+        <button onClick={openModal}>adding a lorebook.</button>
+      </div>
     ) : (
       <div>{userData.name} doesn't have any lore!</div>
     );
@@ -84,12 +125,13 @@ export const Lore = () => {
         {loreData.length === 0 ? (
           renderNoLore()
         ) : (
-          <LorebookDisplay
-            lore={loreData}
-            editable={isOwner()}
-            onAddNewLorebook={onAddNewLorebook}
-          />
+          <LorebookDisplay lore={loreData} editable={isOwner()} openModal={openModal} />
         )}
+        <NewLorebookModal
+          isOpen={modalOpen}
+          closeModal={closeModal}
+          addNewLorebook={addNewLorebook}
+        />
       </>
     );
   };

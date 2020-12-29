@@ -7,10 +7,16 @@
   border: 1px solid black;
   border-bottom: 0;
   cursor: pointer;
+  display: flex;
+  align-items: center;
 }
 
 .LorebookDisplay-tab:hover {
   background-color: gray;
+}
+
+.LorebookDisplay-tab-title {
+  margin-right: 8px;
 }
 
 .LorebookDisplay-tab__selected {
