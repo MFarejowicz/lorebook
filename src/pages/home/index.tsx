@@ -27,7 +27,7 @@ export const Home = (props: Props) => {
       setMyLoreData(filterUserLore(loreSnapshot.val(), user?.uid));
     };
 
-    fetchData();
+    if (user) fetchData();
   }, [user, db]);
 
   if (user === undefined || myLoreData === undefined) {
