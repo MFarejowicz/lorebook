@@ -6,7 +6,7 @@ import "./styles.css";
 interface PublicProps {
   isOpen: boolean;
   closeModal: () => void;
-  addNewLorebook: (title: string, fields: PreField[]) => void;
+  onLorebookAdd: (title: string, fields: PreField[]) => void;
 }
 
 type Props = PublicProps;
@@ -14,16 +14,19 @@ type Props = PublicProps;
 export const NewLorebookModal = (props: Props) => {
   const [title, setTitle] = useState("");
   const [fields, setFields] = useState<PreField[]>([]);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
     setTitle("");
     setFields([]);
+    setError(false);
   }, [props.isOpen]);
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
 
     setTitle(value);
+    setError(false);
   };
 
   const addField = () => {
@@ -33,12 +36,14 @@ export const NewLorebookModal = (props: Props) => {
       type: "text",
     });
     setFields(newFields);
+    setError(false);
   };
 
   const removeField = (index: number) => {
     const newFields = [...fields];
     newFields.splice(index, 1);
     setFields(newFields);
+    setError(false);
   };
 
   const handleFieldChange = (
@@ -49,13 +54,29 @@ export const NewLorebookModal = (props: Props) => {
     const value = e.target.value as FieldType;
 
     const newFields = [...fields];
-    newFields[index][key] = value;
+    const newField = { ...newFields[index], [key]: value };
+    newFields[index] = newField;
 
     setFields(newFields);
+    setError(false);
   };
 
   const addNewLorebook = () => {
-    props.addNewLorebook(title, fields);
+    let valid = true;
+
+    if (title === "") {
+      valid = false;
+      setError(true);
+    }
+
+    if (fields.length === 0 || fields.some((el) => el.name === "")) {
+      valid = false;
+      setError(true);
+    }
+
+    if (valid) {
+      props.onLorebookAdd(title, fields);
+    }
   };
 
   return (
@@ -91,6 +112,7 @@ export const NewLorebookModal = (props: Props) => {
         ))}
         <button onClick={addField}>+</button>
       </div>
+      {error && <div>A lorebook must have a title and at least one field!</div>}
       <button onClick={addNewLorebook}>Add</button>
       <button onClick={props.closeModal}>Close</button>
     </ReactModal>

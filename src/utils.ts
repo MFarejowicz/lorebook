@@ -4,7 +4,11 @@ interface LoreMap {
   [id: string]: Lorebook;
 }
 
-export const filterUserLore = (loreMap: LoreMap, userID: string) => {
+export const filterUserLore = (loreMap: LoreMap, userID?: string) => {
+  if (!userID) {
+    return [];
+  }
+
   const lorebooks = Object.values<Lorebook>(loreMap);
   const userLorebooks = lorebooks.filter((book) => book.author === userID);
 

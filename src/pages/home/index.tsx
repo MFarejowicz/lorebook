@@ -24,7 +24,7 @@ export const Home = (props: Props) => {
   useEffect(() => {
     const fetchData = async () => {
       const loreSnapshot = await db.ref(`/lore`).once("value");
-      if (user) setMyLoreData(filterUserLore(loreSnapshot.val(), user.uid));
+      setMyLoreData(filterUserLore(loreSnapshot.val(), user?.uid));
     };
 
     fetchData();

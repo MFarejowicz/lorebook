@@ -10,6 +10,7 @@ interface PublicProps {
   lore: Lorebook[];
   editable: boolean;
   openModal: () => void;
+  refreshLore: () => void;
 }
 
 type Props = PublicProps;
@@ -120,6 +121,13 @@ export const LorebookDisplay = (props: Props) => {
     );
   };
 
+  const onLorebookDelete = () => {
+    props.refreshLore();
+    setModalOpen(false);
+    setSelectedLoreID(props.lore[0].id);
+    setLorebookData(props.lore[0]);
+  };
+
   return (
     <div>
       {renderTabs()}
@@ -127,7 +135,13 @@ export const LorebookDisplay = (props: Props) => {
       <div className="LorebookDisplay-new" onClick={addNewEntry}>
         +
       </div>
-      <EditLorebookModal isOpen={modalOpen} closeModal={closeModal} lorebook={lorebookData} />
+      <EditLorebookModal
+        isOpen={modalOpen}
+        closeModal={closeModal}
+        lorebook={lorebookData}
+        onLorebookEdit={props.refreshLore}
+        onLorebookDelete={onLorebookDelete}
+      />
     </div>
   );
 };

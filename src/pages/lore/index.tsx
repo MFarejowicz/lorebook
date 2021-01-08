@@ -56,7 +56,7 @@ export const Lore = () => {
     return <div className="Lore">User not found!</div>;
   }
 
-  const onAddNewLorebook = async () => {
+  const refreshLore = async () => {
     const loreSnapshot = await db.ref(`/lore`).once("value");
     setLoreData(filterUserLore(loreSnapshot.val(), userID));
   };
@@ -86,7 +86,7 @@ export const Lore = () => {
       }
 
       closeModal();
-      onAddNewLorebook();
+      refreshLore();
     }
   };
 
@@ -125,12 +125,17 @@ export const Lore = () => {
         {loreData.length === 0 ? (
           renderNoLore()
         ) : (
-          <LorebookDisplay lore={loreData} editable={isOwner()} openModal={openModal} />
+          <LorebookDisplay
+            lore={loreData}
+            editable={isOwner()}
+            openModal={openModal}
+            refreshLore={refreshLore}
+          />
         )}
         <NewLorebookModal
           isOpen={modalOpen}
           closeModal={closeModal}
-          addNewLorebook={addNewLorebook}
+          onLorebookAdd={addNewLorebook}
         />
       </>
     );

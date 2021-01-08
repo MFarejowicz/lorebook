@@ -17,7 +17,6 @@ export const Editable = (props: Props) => {
   const [text, setText] = useState(props.initialValue);
   const [isEditing, setIsEditing] = useState(false);
   const inputRef = createRef<HTMLInputElement>();
-  const outputRef = createRef<HTMLDivElement>();
 
   useEffect(() => {
     if (isEditing) {
@@ -63,7 +62,6 @@ export const Editable = (props: Props) => {
       onClick={startEditing}
       onKeyPress={enterPress(startEditing)}
       tabIndex={0}
-      ref={outputRef}
     >
       {text}
     </div>
