@@ -7,7 +7,6 @@ interface PublicProps {
   isOpen: boolean;
   closeModal: () => void;
   lorebook: Lorebook;
-  onLorebookEdit: () => void;
   onLorebookDelete: () => void;
 }
 
@@ -36,7 +35,6 @@ export const EditLorebookModal = (props: Props) => {
   const saveTitleChange = () => {
     const update = { title };
     db.ref(`/lore/${props.lorebook.id}`).update(update);
-    props.onLorebookEdit();
   };
 
   const cancelTitleChange = () => {
@@ -72,7 +70,6 @@ export const EditLorebookModal = (props: Props) => {
       updates[field.id] = field;
     }
     db.ref(`/lore/${props.lorebook.id}/fields`).update(updates);
-    props.onLorebookEdit();
   };
 
   const cancelFieldChanges = () => {

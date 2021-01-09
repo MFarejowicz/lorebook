@@ -1,5 +1,5 @@
 import classnames from "classnames";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useState } from "react";
 import { Entry, Field, FirebaseContext, Lorebook } from "src/firebase";
 import { enterPress } from "src/utils";
 import { EditLorebookModal } from "../edit-lorebook-modal";
@@ -10,7 +10,6 @@ interface PublicProps {
   lore: Lorebook[];
   editable: boolean;
   openModal: () => void;
-  refreshLore: () => void;
 }
 
 type Props = PublicProps;
@@ -19,8 +18,9 @@ export const LorebookDisplay = (props: Props) => {
   const { db } = useContext(FirebaseContext);
 
   // set initial state from props
-  const [selectedLoreID, setSelectedLoreID] = useState(props.lore[0].id);
-  const [lorebookData, setLorebookData] = useState<Lorebook>(props.lore[0]);
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const selectedLorebook = props.lore[selectedIndex];
+
   const [modalOpen, setModalOpen] = useState(false);
   const openModal = () => {
     setModalOpen(true);
@@ -30,40 +30,30 @@ export const LorebookDisplay = (props: Props) => {
     setModalOpen(false);
   };
 
-  useEffect(() => {
-    const listener = db.ref(`/lore/${selectedLoreID}`).on("value", (lorebookSnapshot) => {
-      setLorebookData(lorebookSnapshot.val());
-    });
-
-    return () => {
-      db.ref(`/lore/${selectedLoreID}`).off("value", listener);
-    };
-  }, [db, selectedLoreID]);
-
   const addNewEntry = () => {
-    const newPostKey = db.ref(`/lore/${selectedLoreID}/entries`).push().key;
+    const newPostKey = db.ref(`/lore/${selectedLorebook.id}/entries`).push().key;
     if (newPostKey) {
       const update: Entry = { id: newPostKey };
 
-      db.ref(`/lore/${selectedLoreID}/entries/${newPostKey}`).update(update);
+      db.ref(`/lore/${selectedLorebook.id}/entries/${newPostKey}`).update(update);
     }
   };
 
   const renderTabs = () => {
     return (
       <div className="LorebookDisplay-tabs">
-        {props.lore.map((el) => (
+        {props.lore.map((el, index) => (
           <div
             className={classnames("LorebookDisplay-tab", {
-              "LorebookDisplay-tab__selected": el.id === selectedLoreID,
+              "LorebookDisplay-tab__selected": index === selectedIndex,
             })}
-            onClick={() => setSelectedLoreID(el.id)}
-            onKeyPress={enterPress(() => setSelectedLoreID(el.id))}
+            onClick={() => setSelectedIndex(index)}
+            onKeyPress={enterPress(() => setSelectedIndex(index))}
             tabIndex={0}
             key={`tab-${el.id}`}
           >
             <h2 className="LorebookDisplay-tab-title">{el.title}</h2>
-            {el.id === selectedLoreID && <button onClick={openModal}>E</button>}
+            {index === selectedIndex && <button onClick={openModal}>E</button>}
           </div>
         ))}
         <div
@@ -97,7 +87,7 @@ export const LorebookDisplay = (props: Props) => {
           <Editable
             key={`cell-${entry.id}-${field.id}`}
             initialValue={entry[field.id] || "---"}
-            lorebook={lorebookData}
+            lorebook={selectedLorebook}
             field={field}
             entry={entry}
           />
@@ -107,8 +97,8 @@ export const LorebookDisplay = (props: Props) => {
   };
 
   const renderBody = () => {
-    const fields = Object.values(lorebookData.fields || []);
-    const entries = Object.values(lorebookData.entries || []);
+    const fields = Object.values(selectedLorebook.fields || []);
+    const entries = Object.values(selectedLorebook.entries || []);
 
     return (
       <div
@@ -122,10 +112,8 @@ export const LorebookDisplay = (props: Props) => {
   };
 
   const onLorebookDelete = () => {
-    props.refreshLore();
     setModalOpen(false);
-    setSelectedLoreID(props.lore[0].id);
-    setLorebookData(props.lore[0]);
+    setSelectedIndex(0);
   };
 
   return (
@@ -138,8 +126,7 @@ export const LorebookDisplay = (props: Props) => {
       <EditLorebookModal
         isOpen={modalOpen}
         closeModal={closeModal}
-        lorebook={lorebookData}
-        onLorebookEdit={props.refreshLore}
+        lorebook={selectedLorebook}
         onLorebookDelete={onLorebookDelete}
       />
     </div>

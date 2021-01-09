@@ -1,6 +1,9 @@
 {
   "rules": {
     ".read": "now < 1611129600000",
-    ".write": "now < 1611129600000"
+    ".write": "now < 1611129600000",
+    "lore": {
+      ".indexOn": "index"
+    }
   }
 }

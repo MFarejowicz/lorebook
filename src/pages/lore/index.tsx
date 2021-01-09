@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import { LorebookDisplay } from "src/components/lorebook";
 import { NewLorebookModal } from "src/components/new-lorebook-modal";
 import { Field, FirebaseContext, Lorebook, PreField, User } from "src/firebase";
-import { filterUserLore } from "src/utils";
+import { mapToArray } from "src/utils";
 import "./styles.css";
 
 interface LoreParams {
@@ -40,12 +40,20 @@ export const Lore = () => {
     const fetchData = async () => {
       const userSnapshot = await db.ref(`/users/${userID}`).once("value");
       setUserData(userSnapshot.val());
-
-      const loreSnapshot = await db.ref(`/lore`).once("value");
-      setLoreData(filterUserLore(loreSnapshot.val(), userID));
     };
-
     fetchData();
+
+    const onLoreChange = db
+      .ref("/lore")
+      .orderByChild("author")
+      .equalTo(userID)
+      .on("value", (loreSnapshot) => {
+        setLoreData(mapToArray(loreSnapshot.val()));
+      });
+
+    return () => {
+      db.ref("/lore").off("value", onLoreChange);
+    };
   }, [db, userID]);
 
   if (userData === undefined) {
@@ -55,11 +63,6 @@ export const Lore = () => {
   if (userData === null) {
     return <div className="Lore">User not found!</div>;
   }
-
-  const refreshLore = async () => {
-    const loreSnapshot = await db.ref(`/lore`).once("value");
-    setLoreData(filterUserLore(loreSnapshot.val(), userID));
-  };
 
   const addNewLorebook = async (title: string, fields: PreField[]) => {
     const newLorebookKey = db.ref(`/lore`).push().key;
@@ -86,7 +89,6 @@ export const Lore = () => {
       }
 
       closeModal();
-      refreshLore();
     }
   };
 
@@ -125,12 +127,7 @@ export const Lore = () => {
         {loreData.length === 0 ? (
           renderNoLore()
         ) : (
-          <LorebookDisplay
-            lore={loreData}
-            editable={isOwner()}
-            openModal={openModal}
-            refreshLore={refreshLore}
-          />
+          <LorebookDisplay lore={loreData} editable={isOwner()} openModal={openModal} />
         )}
         <NewLorebookModal
           isOpen={modalOpen}

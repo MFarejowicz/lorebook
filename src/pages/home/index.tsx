@@ -2,7 +2,7 @@ import { useContext, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { SignInButton } from "src/components/sign-in-button";
 import { FirebaseContext, Lorebook } from "src/firebase";
-import { filterUserLore } from "src/utils";
+import { mapToArray } from "src/utils";
 import "./styles.css";
 
 interface PublicProps {
@@ -22,12 +22,17 @@ export const Home = (props: Props) => {
   const [myLoreData, setMyLoreData] = useState<Lorebook[]>();
 
   useEffect(() => {
-    const fetchData = async () => {
-      const loreSnapshot = await db.ref(`/lore`).once("value");
-      setMyLoreData(filterUserLore(loreSnapshot.val(), user?.uid));
-    };
+    const onValueChange = db
+      .ref("/lore")
+      .orderByChild("author")
+      .equalTo(user?.uid || null)
+      .on("value", (loreSnapshot) => {
+        setMyLoreData(mapToArray(loreSnapshot.val()));
+      });
 
-    if (user) fetchData();
+    return () => {
+      db.ref("/lore").off("value", onValueChange);
+    };
   }, [user, db]);
 
   if (user === undefined || myLoreData === undefined) {
