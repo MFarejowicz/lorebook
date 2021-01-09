@@ -4,7 +4,11 @@ interface LoreMap {
   [id: string]: Lorebook;
 }
 
-export const mapToArray = (loreMap: LoreMap) => {
+export const mapToArray = (loreMap: LoreMap | null) => {
+  if (!loreMap) {
+    return [];
+  }
+
   return Object.values<Lorebook>(loreMap);
 };
 
