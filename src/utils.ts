@@ -1,4 +1,5 @@
-import { Lorebook } from "src/firebase";
+import { useEffect, useRef } from "react";
+import { FieldType, Lorebook } from "src/firebase";
 
 interface LoreMap {
   [id: string]: Lorebook;
@@ -17,3 +18,23 @@ export const enterPress = (callback: Function) => {
     if (e.key === "Enter") callback();
   };
 };
+
+export const initialEditable = (initialValue: string | boolean | null, type: FieldType) => {
+  if (initialValue) {
+    return initialValue;
+  }
+
+  if (type === "checkbox") {
+    return false;
+  }
+
+  return "---";
+};
+
+export function usePrevious<T>(value: T) {
+  const ref = useRef<T>();
+  useEffect(() => {
+    ref.current = value;
+  });
+  return ref.current as T;
+}

@@ -60,6 +60,8 @@ export const EditLorebookModal = (props: Props) => {
 
     return fields.some((el, index) => {
       const originalField = originalFields[index];
+      if (!originalField) return false;
+
       return el.name !== originalField.name || el.type !== originalField.type;
     });
   };
@@ -76,6 +78,24 @@ export const EditLorebookModal = (props: Props) => {
     const originalFields = Object.values(props.lorebook.fields || []);
 
     setFields(originalFields);
+  };
+
+  const addField = async () => {
+    const newFieldKey = db.ref(`/lore/${props.lorebook.id}/fields`).push().key;
+    if (newFieldKey) {
+      const fieldUpdate: Field = {
+        id: newFieldKey,
+        name: "---",
+        type: "text",
+      };
+      await db.ref(`/lore/${props.lorebook.id}/fields/${newFieldKey}`).update(fieldUpdate);
+    }
+  };
+
+  const removeField = async (index: number) => {
+    const field = fields[index];
+    const update = { [field.id]: null };
+    await db.ref(`/lore/${props.lorebook.id}/fields`).update(update);
   };
 
   const deleteLorebook = () => {
@@ -115,7 +135,9 @@ export const EditLorebookModal = (props: Props) => {
               <option value="text">Text</option>
               <option value="number">Number</option>
               <option value="date">Date</option>
+              <option value="checkbox">Checkbox</option>
             </select>
+            <button onClick={() => removeField(index)}>X</button>
           </div>
         ))}
         {hasFieldChanged() && (
@@ -124,6 +146,7 @@ export const EditLorebookModal = (props: Props) => {
             <button onClick={cancelFieldChanges}>Cancel</button>
           </>
         )}
+        <button onClick={addField}>+</button>
       </div>
       <button onClick={props.closeModal}>Close</button>
       <button onClick={deleteLorebook}>DELETE LOREBOOK!!!</button>

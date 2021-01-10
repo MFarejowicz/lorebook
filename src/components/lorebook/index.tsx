@@ -86,7 +86,7 @@ export const LorebookDisplay = (props: Props) => {
         {fields.map((field) => (
           <Editable
             key={`cell-${entry.id}-${field.id}`}
-            initialValue={entry[field.id] || "---"}
+            initialValue={entry[field.id]}
             lorebook={selectedLorebook}
             field={field}
             entry={entry}

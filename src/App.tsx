@@ -2,6 +2,9 @@ import { useContext, useEffect } from "react";
 import ReactModal from "react-modal";
 import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
 import withFirebaseAuth, { WrappedComponentProps as AuthProps } from "react-with-firebase-auth";
+import { library } from "@fortawesome/fontawesome-svg-core";
+import { far } from "@fortawesome/free-regular-svg-icons";
+import { fas } from "@fortawesome/free-solid-svg-icons";
 import { NavBar } from "./components/navbar";
 import { firebaseAppAuth, FirebaseContext, FirebaseContextManager, providers } from "./firebase";
 import { Home } from "./pages/home";
@@ -10,6 +13,7 @@ import { NotFound } from "./pages/not-found";
 import "./App.css";
 
 ReactModal.setAppElement("#root");
+library.add(fas, far);
 
 type Props = AuthProps;
 

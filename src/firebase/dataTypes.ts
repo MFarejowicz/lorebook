@@ -9,7 +9,7 @@ export interface Entry {
   [key: string]: string | null;
 }
 
-export type FieldType = "text" | "number" | "date";
+export type FieldType = "text" | "number" | "date" | "checkbox";
 
 export interface Field {
   id: string;

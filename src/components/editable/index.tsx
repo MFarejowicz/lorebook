@@ -1,10 +1,11 @@
 import { createRef, useContext, useEffect, useState } from "react";
-import { Entry, Field, FirebaseContext, Lorebook } from "src/firebase";
-import { enterPress } from "src/utils";
+import { Entry, Field, FieldType, FirebaseContext, Lorebook } from "src/firebase";
+import { enterPress, initialEditable, usePrevious } from "src/utils";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import "./styles.css";
 
 interface PublicProps {
-  initialValue: string;
+  initialValue: string | boolean | null;
   lorebook: Lorebook;
   field: Field;
   entry: Entry;
@@ -14,20 +15,35 @@ type Props = PublicProps;
 
 export const Editable = (props: Props) => {
   const { db } = useContext(FirebaseContext);
-  const [text, setText] = useState(props.initialValue);
+  const [value, setValue] = useState(initialEditable(props.initialValue, props.field.type));
   const [isEditing, setIsEditing] = useState(false);
+  const prevIsEditing = usePrevious(isEditing);
   const inputRef = createRef<HTMLInputElement>();
+  const outputRef = createRef<HTMLDivElement>();
 
   useEffect(() => {
-    if (isEditing) {
+    setValue(initialEditable(props.initialValue, props.field.type));
+  }, [props.initialValue, props.field.type]);
+
+  useEffect(() => {
+    if (!prevIsEditing && isEditing) {
       inputRef.current?.focus();
     }
-  }, [isEditing, inputRef]);
 
-  const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
+    if (prevIsEditing && !isEditing) {
+      outputRef.current?.focus();
+    }
+  }, [prevIsEditing, isEditing, inputRef, outputRef]);
 
-    setText(value);
+  const onChange = (e: React.ChangeEvent<HTMLInputElement>, type: FieldType) => {
+    let newValue;
+    if (type === "checkbox") {
+      newValue = e.target.checked;
+    } else {
+      newValue = e.target.value;
+    }
+
+    setValue(newValue);
   };
 
   const startEditing = () => {
@@ -37,19 +53,53 @@ export const Editable = (props: Props) => {
   const saveEdit = () => {
     setIsEditing(false);
 
-    const update = { [props.field.id]: text };
+    const update = { [props.field.id]: value };
     db.ref(`/lore/${props.lorebook.id}/entries/${props.entry.id}`).update(update);
   };
 
   const cancelEdit = () => {
-    setText(props.initialValue);
+    setValue(initialEditable(props.initialValue, props.field.type));
     setIsEditing(false);
+  };
+
+  const renderEditing = () => {
+    if (props.field.type === "checkbox") {
+      return (
+        <input
+          checked={Boolean(value)}
+          onChange={(e) => onChange(e, props.field.type)}
+          type={props.field.type}
+          ref={inputRef}
+        />
+      );
+    }
+
+    return (
+      <input
+        value={String(value)}
+        onChange={(e) => onChange(e, props.field.type)}
+        type={props.field.type}
+        ref={inputRef}
+      />
+    );
+  };
+
+  const renderNotEditing = () => {
+    if (props.field.type === "checkbox") {
+      if (value) {
+        return <FontAwesomeIcon icon={["far", "check-square"]} />;
+      }
+
+      return <FontAwesomeIcon icon={["far", "square"]} />;
+    }
+
+    return <span>{value}</span>;
   };
 
   if (isEditing) {
     return (
       <div className="Editable">
-        <input value={text} onChange={onChange} type={props.field.type} ref={inputRef} />
+        {renderEditing()}
         <button onClick={saveEdit}>Save</button>
         <button onClick={cancelEdit}>Cancel</button>
       </div>
@@ -62,8 +112,9 @@ export const Editable = (props: Props) => {
       onClick={startEditing}
       onKeyPress={enterPress(startEditing)}
       tabIndex={0}
+      ref={outputRef}
     >
-      {text}
+      {renderNotEditing()}
     </div>
   );
 };
